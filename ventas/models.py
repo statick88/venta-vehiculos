@@ -18,7 +18,6 @@ class Vehículo(models.Model):
         color = models.CharField(max_length=50)
         anio = models.IntegerField()
         precio = models.FloatField()
-        tipo = models.CharField(max_length=50)
         foto = models.ImageField(upload_to='vehículos', null=True)
 
     
@@ -27,14 +26,19 @@ class Vehículo(models.Model):
 
 class Venta(models.Model):
         
-            cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-            vehículo = models.ForeignKey(Vehículo, on_delete=models.CASCADE)
-            fecha = models.DateField(auto_now=True)
-            costo = models.FloatField(verbose_name='Costo del vehículo')
-            observaciones = models.CharField(max_length=50)
-            iva = models.FloatField()
-            descuento = models.FloatField()
-            total = models.FloatField()
-    
-            def __str__(self):
-                return self.cliente.nombre + ' ' + self.cliente.apellido + ' ' + self.vehículo.marca + ' ' + self.vehículo.modelo + ' ' + self.monto + ' ' + self.estado
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    vehículo = models.ForeignKey(Vehículo, on_delete=models.CASCADE)
+    fecha = models.DateField(auto_now=True)
+    costo = models.FloatField(verbose_name='Costo del vehiculo')
+    observaciones = models.CharField(max_length=50)
+    iva = models.FloatField(choices=[(0.12, '12%')])
+    total = models.FloatField()
+    descuento = models.FloatField(choices=[(0.1, '10%'), (0.2, '20%'), (0.3, '30%')])  # Add choices for discount percentages
+
+    @property
+    def total(self):
+        total = self.costo + self.iva - (self.costo * self.descuento)  # Calculate total amount after discount
+        return total
+
+    def __str__(self):
+        return f"{self.cliente.nombre} {self.cliente.apellido} - {self.vehículo} por el costo tota de: {self.total}"
